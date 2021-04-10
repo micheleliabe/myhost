@@ -1,4 +1,4 @@
-// Import required AWS SDK clients and commands for Node.js
+// Import modules
 const {
     S3Client,
     CreateBucketCommand,
@@ -17,14 +17,13 @@ const fs = require("fs")
 const path = require("path")
 const _Display = require('../display/bars');
 
-const boxen = require('boxen');
 const chalk = require('chalk');
+
+
 
 exports.getBuckets = (req, res) => {
 
-    
 
-    // Cria um cliente do S3
     const s3 = new S3Client({
         region: req.body.region
     });
@@ -37,13 +36,13 @@ exports.getBuckets = (req, res) => {
             _Display.line()
 
             const data = await s3.send(new ListBucketsCommand({}))
-            console.log(chalk.green('- Response'),'/ success')
-            console.table(data.Buckets)
+            console.log('- Response / ', chalk.green('success')),
+                console.table(data.Buckets)
             res.send(data.Buckets)
 
         } catch (err) {
-            console.log(chalk.red('- Response'),'/ error')
-            console.log(err)
+            console.log('-Response / ', chalk.red('error')),
+                console.log(err)
         }
         _Display.strongLine()
     }
@@ -52,17 +51,19 @@ exports.getBuckets = (req, res) => {
 
 exports.createBucket = (req, res) => {
 
-    //Define os parametros do bucket
-    bucketParams = {
-        Bucket: req.body.bucket
-    };
 
-    // Cria um cliente do S3
+
     const s3 = new S3Client({
         region: req.body.region
     });
 
-    //Cria o bucket com base nos parametros
+
+    bucketParams = {
+        Bucket: req.body.bucket,
+        Region: req.body.region
+    };
+
+
     const run = async () => {
 
         try {
@@ -72,12 +73,11 @@ exports.createBucket = (req, res) => {
             _Display.line()
 
             const data = await s3.send(new CreateBucketCommand(bucketParams));
-            console.log(''),
-                console.log("New bucket created."),
-                console.log(''),
-                console.log('  Bucket name: ', bucketParams.Bucket),
-                console.log('  Region : ', req.body.region),
-                _Display.strongLine()
+            console.log('-Response / ', chalk.green('success'))
+            console.log('')
+            console.log("-New bucket created.")
+            console.table(bucketParams)
+            _Display.strongLine()
 
             res.send({
                 Bucket: bucketParams.Bucket,
@@ -85,11 +85,11 @@ exports.createBucket = (req, res) => {
             })
 
         } catch (err) {
-            console.log(" - Bucket creation failed")
+            console.log('-Response / ', chalk.red('error')),
+                console.log('')
+            console.log(' Error details: ')
             console.log('')
-            console.log(' - Error details: ')
-            console.log('')
-            console.log(err)
+            console.log('', chalk.yellow(err.Code))
             _Display.strongLine()
             res.send(err)
         }
@@ -98,7 +98,7 @@ exports.createBucket = (req, res) => {
 }
 
 exports.putbucektPolicy = (req, res) => {
-    // Cria um cliente do S3
+
     const s3 = new S3Client({
         region: req.body.region
     });
@@ -117,20 +117,61 @@ exports.putbucektPolicy = (req, res) => {
         })
     }
 
-    console.log(JSON.stringify(params.Policy))
     const run = async () => {
 
         try {
-            console.log("")
-            console.log(`Definindo politica`)
+            _Display.line()
+            console.log('Request - Define new bucket policy')
             _Display.line()
             const data = await s3.send(new PutBucketPolicyCommand(params))
-
-            console.log('Sucesso', data)
+            console.log('-Response / ', chalk.green('success'))
+            console.log('')
+            console.log('Policy')
+            console.log('')
+            console.log(JSON.parse(params.Policy))
             res.send(data)
 
         } catch (err) {
-            console.log('Erro', err)
+            console.log('-Response / ', chalk.red('error')),
+            console.log('')
+            console.log(' Error details: ')
+            console.log('')
+            console.log('', chalk.yellow(err))
+            res.send(err)
+        }
+        _Display.strongLine()
+    }
+    run()
+}
+
+exports.enablePublicAccess = (req, res) => {
+
+    const s3 = new S3Client({
+        region: req.body.region
+    })
+
+    const bucketParams = {
+        Bucket: req.body.bucket
+    }
+
+    async function run() {
+
+        try {
+            _Display.line()
+            console.log('Request - Enable public access in bucket',req.body.bucket)
+            _Display.line()
+            const data = await s3.send(new DeletePublicAccessBlockCommand(bucketParams))
+            console.log('-Response / ', chalk.green('success'))
+            console.log('')
+            console.log(data)
+            res.send(data)
+        } catch (err) {
+            console.log('-Response / ', chalk.red('error')),
+            console.log('')
+            console.log(' Error details: ')
+            console.log('')
+            console.log('', chalk.yellow(err))
+            res.send(err)
         }
         _Display.strongLine()
     }
@@ -150,26 +191,78 @@ exports.hasWebSiteConfiguration = (req, res) => {
 
     const run = async () => {
         try {
-            console.log('')
-            console.log(`Checking ${req.body.bucket} bucket site settings`)
-            _Display.line()
 
+            _Display.line()
+            console.log('Request -', `Checking ${req.body.bucket} bucket site settings`)
+            _Display.line()
             const data = await s3.send(new GetBucketWebsiteCommand(bucketParams));
+
+            console.log('-Response / ', chalk.green('success'))
+            console.log('')
             console.log("")
-            console.log("The bucket is enabled for websites");
             console.log(data)
-            _Display.spaceLine()
-            res.send(data)
+            res.send({isWebSite : true})       
 
         } catch (err) {
-            console.log("The bucket is not enabled for websites");
-            console.log(data)
-            res.send(err)
+
+            console.log('-Response / ', chalk.red('error'))
+            if(err.Code ==  "NoSuchBucket"){
+                console.log(' Bucket not found')
+                console.log(' Error details: ')
+                console.log('', chalk.yellow(err))
+                console.log('')
+                res.send(err)
+            }else{
+                console.log('')
+                console.log(" The bucket is not enabled for websites");
+                console.log('')
+                res.send({isWebSite : false})         
+            }
+              
         }
         _Display.strongLine()
     };
 
 
+    run();
+}
+
+exports.enableWebSiteHosting = (req, res) => {
+
+    const staticHostParams = {
+        Bucket: req.body.bucket,
+        WebsiteConfiguration: {
+            ErrorDocument: {
+                Key: 'erro.html'
+            },
+            IndexDocument: {
+                Suffix: 'index.html'
+            }
+        }
+    };
+
+    // Create S3 service object
+    const s3 = new S3Client({
+        region: req.body.region
+    });
+
+    const run = async () => {
+        // Insert specified bucket name and index and error documents into params JSON
+        // from command line arguments
+        // set the new website configuration on the selected bucket
+        try {
+            console.log("")
+            console.log(`Enabling site configuration for the ${req.body.bucket} bucket`)
+            _Display.line()
+            let data = await s3.send(new PutBucketWebsiteCommand(staticHostParams));
+            console.log("Success", data);
+            res.send(data)
+        } catch (err) {
+            console.log("Error", err);
+            res.send(data)
+        }
+        _Display.strongLine()
+    };
     run();
 }
 
@@ -251,86 +344,6 @@ exports.setCors = (req, res) => {
     run();
 }
 
-exports.enableWebSiteHosting = (req, res) => {
-
-    const staticHostParams = {
-        Bucket: req.body.bucket,
-        WebsiteConfiguration: {
-            ErrorDocument: {
-                Key: 'erro.html'
-            },
-            IndexDocument: {
-                Suffix: 'index.html'
-            }
-        }
-    };
-
-    // Create S3 service object
-    const s3 = new S3Client({
-        region: req.body.region
-    });
-
-    const run = async () => {
-        // Insert specified bucket name and index and error documents into params JSON
-        // from command line arguments
-        // set the new website configuration on the selected bucket
-        try {
-            console.log("")
-            console.log(`Enabling site configuration for the ${req.body.bucket} bucket`)
-            _Display.line()
-            let data = await s3.send(new PutBucketWebsiteCommand(staticHostParams));
-            console.log("Success", data);
-            res.send(data)
-        } catch (err) {
-            console.log("Error", err);
-            res.send(data)
-        }
-        _Display.strongLine()
-    };
-    run();
-}
-
-exports.enablePublicAccess = (req, res) => {
-
-    const s3 = new S3Client({
-        region: req.body.region
-    })
-
-    const bucketParams = {
-        Bucket: req.body.bucket
-    }
-
-    async function run() {
-
-        try {
-            console.log('')
-            console.log('Enabling public access')
-            _Display.line()
-            const data = await s3.send(new DeletePublicAccessBlockCommand(bucketParams))
-            console.log("Success public access", data)
-            _Display.strongLine()
-            res.send(data)
-        } catch (err) {
-            console.log("Error", err)
-            res.send(err)
-        }
-
-    }
-    run()
-}
-
-//Lista os Endpoints de site estatico da Amazon
-exports.AmazonS3WebsiteEndpoints = (req, res) => {
-    const regions = require('../../regions')
-    console.log('')
-    console.log("S3 endpoints available:")
-    console.log('')
-    console.log(regions.listS3WebSiteEndpoints())
-    res.send(regions.returnEndpointsInJSON())
-    _Display.strongLine()
-}
-
-
 exports.createObject = (req, res) => {
 
     const s3 = new S3Client({
@@ -367,33 +380,14 @@ exports.createObject = (req, res) => {
 }
 
 
-// exports.objectPublic = (req, res) => {
-//     const s3 = new S3Client({
-//         region: req.body.region
-//     })
 
-//     async function run() {
-
-//         let params = {
-//             Bucket: req.body.bucket,
-//             Key: path.basename('../erro.html'),
-//         }
-
-//         try {
-
-//             console.log('Upload do arquivo base')
-//             const data = await s3.send(new PutObjectCommand(params))
-//             console.log('Upload concluido', data)
-//             res.send(data)
-
-//         } catch (error) {
-//             console.log('Erro', error)
-//             res.send(error)
-//         }
-
-
-//     }
-
-
-//     run()
-// }
+//Lista os Endpoints de site estatico da Amazon
+exports.AmazonS3WebsiteEndpoints = (req, res) => {
+    const regions = require('../../regions')
+    console.log('')
+    console.log("S3 endpoints available:")
+    console.log('')
+    console.log(regions.listS3WebSiteEndpoints())
+    res.send(regions.returnEndpointsInJSON())
+    _Display.strongLine()
+}

@@ -19,7 +19,7 @@ app.use(routes)
 
 app.listen(port, () => {
   async function welcome() {
-    const logo = await figlet("MyHOST");
+    const logo = await figlet("chappie");
     console.log(chalk.blueBright(logo));
     console.log(chalk.gray('                       By: Michel Dias'))
    

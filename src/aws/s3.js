@@ -14,17 +14,15 @@ const {
 
 
 const fs = require("fs")
-
-//Modulo para tratar os caminhos de arquivos
 const path = require("path")
+const _Display = require('../display/bars');
 
-
-//Modulo para gerar linhas de separaçao no console.log
-const vDisplay = require('../display/bars');
-
-
+const boxen = require('boxen');
+const chalk = require('chalk');
 
 exports.getBuckets = (req, res) => {
+
+    
 
     // Cria um cliente do S3
     const s3 = new S3Client({
@@ -34,18 +32,20 @@ exports.getBuckets = (req, res) => {
     const run = async () => {
 
         try {
-            console.log("")
-            console.log(`Obtaining buckets in the region`)
-            vDisplay.line()
-            const data = await s3.send(new ListBucketsCommand({}))
+            _Display.line()
+            console.log('Request - All buckets in your account')
+            _Display.line()
 
-            console.log(data.Buckets)
+            const data = await s3.send(new ListBucketsCommand({}))
+            console.log(chalk.green('- Response'),'/ success')
+            console.table(data.Buckets)
             res.send(data.Buckets)
 
         } catch (err) {
+            console.log(chalk.red('- Response'),'/ error')
             console.log(err)
         }
-        vDisplay.strongLine()
+        _Display.strongLine()
     }
     run()
 }
@@ -66,9 +66,10 @@ exports.createBucket = (req, res) => {
     const run = async () => {
 
         try {
-            console.log('')
-            console.log('Creating a new bucket..')
-            console.log('')
+
+            _Display.line()
+            console.log('Request - Create a new bucket')
+            _Display.line()
 
             const data = await s3.send(new CreateBucketCommand(bucketParams));
             console.log(''),
@@ -76,7 +77,7 @@ exports.createBucket = (req, res) => {
                 console.log(''),
                 console.log('  Bucket name: ', bucketParams.Bucket),
                 console.log('  Region : ', req.body.region),
-                vDisplay.strongLine()
+                _Display.strongLine()
 
             res.send({
                 Bucket: bucketParams.Bucket,
@@ -89,7 +90,7 @@ exports.createBucket = (req, res) => {
             console.log(' - Error details: ')
             console.log('')
             console.log(err)
-            vDisplay.strongLine()
+            _Display.strongLine()
             res.send(err)
         }
     };
@@ -102,19 +103,17 @@ exports.putbucektPolicy = (req, res) => {
         region: req.body.region
     });
 
-    const params ={
-        Bucket : req.body.bucket,
-        Policy : JSON.stringify({
+    const params = {
+        Bucket: req.body.bucket,
+        Policy: JSON.stringify({
             Version: "2012-10-17",
-            Statement: [
-                {
-                    Sid: "PublicReadGetObject",
-                    Effect: "Allow",
-                    Principal: "*",
-                    Action: "s3:GetObject",
-                    Resource: `arn:aws:s3:::${req.body.bucket}/*`
-                }
-            ]
+            Statement: [{
+                Sid: "PublicReadGetObject",
+                Effect: "Allow",
+                Principal: "*",
+                Action: "s3:GetObject",
+                Resource: `arn:aws:s3:::${req.body.bucket}/*`
+            }]
         })
     }
 
@@ -124,16 +123,16 @@ exports.putbucektPolicy = (req, res) => {
         try {
             console.log("")
             console.log(`Definindo politica`)
-            vDisplay.line()
+            _Display.line()
             const data = await s3.send(new PutBucketPolicyCommand(params))
 
-            console.log('Sucesso',data)
+            console.log('Sucesso', data)
             res.send(data)
 
         } catch (err) {
-            console.log('Erro',err)
+            console.log('Erro', err)
         }
-        vDisplay.strongLine()
+        _Display.strongLine()
     }
     run()
 }
@@ -153,13 +152,13 @@ exports.hasWebSiteConfiguration = (req, res) => {
         try {
             console.log('')
             console.log(`Checking ${req.body.bucket} bucket site settings`)
-            vDisplay.line()
+            _Display.line()
 
             const data = await s3.send(new GetBucketWebsiteCommand(bucketParams));
             console.log("")
             console.log("The bucket is enabled for websites");
             console.log(data)
-            vDisplay.spaceLine()
+            _Display.spaceLine()
             res.send(data)
 
         } catch (err) {
@@ -167,7 +166,7 @@ exports.hasWebSiteConfiguration = (req, res) => {
             console.log(data)
             res.send(err)
         }
-        vDisplay.strongLine()
+        _Display.strongLine()
     };
 
 
@@ -190,7 +189,7 @@ exports.getCors = (req, res) => {
         try {
             console.log('')
             const message = await console.log(`Obtaining CORS settings from the ${req.body.bucket} bucket`)
-            vDisplay.line()
+            _Display.line()
             const data = await s3.send(new GetBucketCorsCommand(bucketParams));
             console.log("CORS", data.CORSRules);
 
@@ -199,7 +198,7 @@ exports.getCors = (req, res) => {
             console.log("Error getting CORS configuration", err);
             res.send(err)
         }
-        vDisplay.strongLine()
+        _Display.strongLine()
     };
     run();
 }
@@ -237,7 +236,7 @@ exports.setCors = (req, res) => {
             console.log('')
             console.log(`Defining new CORS configuration for the ${req.body.bucket} bucket`)
             console.log('   - Methods:', req.body.methods)
-            vDisplay.line()
+            _Display.line()
             const data = await s3.send(new PutBucketCorsCommand(corsParams));
             console.log('')
             console.log("Success", data);
@@ -247,7 +246,7 @@ exports.setCors = (req, res) => {
             res.send(err)
         }
 
-        vDisplay.strongLine()
+        _Display.strongLine()
     }
     run();
 }
@@ -258,12 +257,12 @@ exports.enableWebSiteHosting = (req, res) => {
         Bucket: req.body.bucket,
         WebsiteConfiguration: {
             ErrorDocument: {
-                Key: "erro.html",
+                Key: 'erro.html'
             },
             IndexDocument: {
-                Suffix: "index.html",
-            },
-        },
+                Suffix: 'index.html'
+            }
+        }
     };
 
     // Create S3 service object
@@ -278,7 +277,7 @@ exports.enableWebSiteHosting = (req, res) => {
         try {
             console.log("")
             console.log(`Enabling site configuration for the ${req.body.bucket} bucket`)
-            vDisplay.line()
+            _Display.line()
             let data = await s3.send(new PutBucketWebsiteCommand(staticHostParams));
             console.log("Success", data);
             res.send(data)
@@ -286,7 +285,7 @@ exports.enableWebSiteHosting = (req, res) => {
             console.log("Error", err);
             res.send(data)
         }
-        vDisplay.strongLine()
+        _Display.strongLine()
     };
     run();
 }
@@ -306,10 +305,10 @@ exports.enablePublicAccess = (req, res) => {
         try {
             console.log('')
             console.log('Enabling public access')
-            vDisplay.line()
+            _Display.line()
             const data = await s3.send(new DeletePublicAccessBlockCommand(bucketParams))
             console.log("Success public access", data)
-            vDisplay.strongLine()
+            _Display.strongLine()
             res.send(data)
         } catch (err) {
             console.log("Error", err)
@@ -328,7 +327,7 @@ exports.AmazonS3WebsiteEndpoints = (req, res) => {
     console.log('')
     console.log(regions.listS3WebSiteEndpoints())
     res.send(regions.returnEndpointsInJSON())
-    vDisplay.strongLine()
+    _Display.strongLine()
 }
 
 
@@ -342,8 +341,8 @@ exports.createObject = (req, res) => {
 
         try {
 
-            const indexHTML = path.resolve('exPages','index.html')
-         
+            const indexHTML = path.resolve('exPages', 'index.html')
+
             console.log(indexHTML)
             let fileContent = fs.readFileSync(indexHTML)
 
@@ -357,7 +356,7 @@ exports.createObject = (req, res) => {
             let data = await s3.send(new PutObjectCommand(params))
             console.log('Upload concluido', data)
             res.send(data)
-   
+
 
         } catch (error) {
             console.log('Erro', error)

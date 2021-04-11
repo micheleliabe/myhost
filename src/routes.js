@@ -40,6 +40,12 @@ route.post('/createObject',S3.createObject)
 
 route.put('/putbucektPolicy',S3.putbucektPolicy)
 
+
+
+route.post('/createSite',S3.createSite)
+
+
+
 //exporta as rotas
 module.exports = route
 

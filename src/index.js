@@ -13,7 +13,6 @@ const figlet = require("figlet-promised");
 
 
 
-
 app.use(routes)
 
 
@@ -21,11 +20,11 @@ app.listen(port, () => {
   async function welcome() {
     const logo = await figlet("chappie");
     console.log(chalk.blueBright(logo));
-    console.log(chalk.gray('                       By: Michel Dias'))
+    console.log('')
+    console.log(chalk.gray('            By: Michel Dias'))
    
     console.log('')
     console.log(chalk.greenBright(chalk.bold('Service is started')))
-
   }
   welcome();
   

@@ -39,7 +39,6 @@ exports.getBuckets = (req, res) => {
                 const data = await s3.send(new ListBucketsCommand({}))
                 console.log('- Response - ', chalk.green('success')),
                     console.table(data.Buckets)
-                // res.send(data.Buckets)
                 resolve(data)
 
             } catch (err) {
@@ -79,11 +78,6 @@ exports.createBucket = (req, res) => {
                 console.log('')
                 console.log("-New bucket created.")
                 console.table(bucketParams)
-
-                // res.send({
-                //     Bucket: bucketParams.Bucket,
-                //     Region: req.body.region
-                // })
                 resolve(data)
 
             } catch (err) {
@@ -92,7 +86,6 @@ exports.createBucket = (req, res) => {
                 console.log(' Error details: ')
                 console.log('')
                 console.log('', chalk.yellow(err.Code))
-                // res.send(err)
                 reject(err)
             }
         };
@@ -136,7 +129,6 @@ exports.putbucektPolicy = (req, res) => {
                 console.log('Policy')
                 console.log('')
                 console.log(JSON.parse(params.Policy))
-                // res.send(data)
                 resolve(data)
 
             } catch (err) {
@@ -145,7 +137,6 @@ exports.putbucektPolicy = (req, res) => {
                 console.log(' Error details: ')
                 console.log('')
                 console.log('', chalk.yellow(err))
-                // res.send(err)
                 reject(err)
             }
 
@@ -175,7 +166,6 @@ exports.enablePublicAccess = (req, res) => {
                 console.log('-Response - ', chalk.green('success'))
                 console.log('')
                 console.log(data)
-                // res.send(data)
                 resolve(data)
             } catch (err) {
                 console.log('-Response - ', chalk.red('error'))
@@ -183,7 +173,6 @@ exports.enablePublicAccess = (req, res) => {
                 console.log(' Error details: ')
                 console.log('')
                 console.log('', chalk.yellow(err))
-                // res.send(err)
                 reject(err)
             }
 
@@ -211,14 +200,10 @@ exports.hasWebSiteConfiguration = (req, res) => {
                 console.log(chalk.blueBright('Request -', `Checking ${req.body.bucket} bucket site settings`))
                 _Display.line()
                 const data = await s3.send(new GetBucketWebsiteCommand(bucketParams));
-
                 console.log('-Response - ', chalk.green('success'))
                 console.log('')
                 console.log("")
                 console.log(data)
-                // res.send({
-                //     isWebSite: true
-                // })
                 resolve(data)
 
             } catch (err) {
@@ -229,14 +214,10 @@ exports.hasWebSiteConfiguration = (req, res) => {
                     console.log(' Error details: ')
                     console.log('', chalk.yellow(err))
                     console.log('')
-                    // res.send(err)
                 } else {
                     console.log('')
                     console.log(" The bucket is not enabled for websites");
                     console.log('')
-                    // res.send({
-                    //     isWebSite: false
-                    // })
                     reject(err)
                 }
 
@@ -281,7 +262,6 @@ exports.enableWebSiteHosting = (req, res) => {
                 console.log(chalk.gray('  The setting for static sites has been enabled'))
                 console.log('')
                 console.log(' ', data)
-                // res.send(data)
                 resolve(data)
             } catch (err) {
                 console.log('-Response - ', chalk.red('error'))
@@ -289,7 +269,6 @@ exports.enableWebSiteHosting = (req, res) => {
                 console.log(' Error details: ')
                 console.log('')
                 console.log('', chalk.yellow(err))
-                // res.send(err)
                 reject(err)
             }
 
@@ -322,8 +301,6 @@ exports.getCors = (req, res) => {
                 console.log('')
                 console.log('   Allowed methods: ', data.CORSRules[0].AllowedMethods)
                 console.log('   Allowed origins: ', data.CORSRules[0].AllowedOrigins)
-
-                // res.send(data)
                 resolve(data)
             } catch (err) {
                 console.log('-Response - ', chalk.red('error'))
@@ -333,7 +310,6 @@ exports.getCors = (req, res) => {
                 console.log(' Error details: ')
                 console.log('')
                 console.log('', chalk.yellow(err))
-                // res.send(err)
                 reject(err)
             }
 
@@ -379,13 +355,11 @@ exports.setCors = (req, res) => {
                 console.log(chalk.gray('- Methods:', req.body.methods))
                 _Display.line()
                 const data = await s3.send(new PutBucketCorsCommand(corsParams));
-
                 console.log('-Response - ', chalk.green('success'))
                 console.log('')
                 console.log(chalk.gray('  CORS rules defined'))
                 console.log('')
                 console.log(' ', data)
-                // res.send(data)
                 resolve(data)
 
             } catch (err) {
@@ -394,7 +368,6 @@ exports.setCors = (req, res) => {
                 console.log(' Error details: ')
                 console.log('')
                 console.log('', chalk.yellow(err))
-                // res.send(err)
                 reject(err)
             }
 
@@ -429,12 +402,10 @@ exports.createObject = (req, res) => {
                 console.log(chalk.gray('Upload complete'))
                 console.log('')
                 console.log('', data)
-                // res.send(data)
                 resolve(data)
 
             } catch (error) {
                 console.log('Erro', error)
-                // res.send(error)
                 reject(error)
             }
         }
@@ -446,9 +417,10 @@ exports.createObject = (req, res) => {
 
 //Lista os Endpoints de site estatico da Amazon
 exports.AmazonS3WebsiteEndpoints = (req, res) => {
+
     const regions = require('../../regions')
     _Display.line()
-    console.log("S3 endpoints available:")
+    console.log(chalk.blueBright("S3 endpoints available:"))
     _Display.line()
     console.table(regions.listS3WebSiteEndpoints(), ['name', 'endpoint'])
     res.send(regions.returnEndpointsInJSON())
@@ -458,13 +430,14 @@ exports.AmazonS3WebsiteEndpoints = (req, res) => {
 
 exports.createSite = async (req, res) => {
     try {
-
         let data = await this.createBucket(req, res)
         data = await this.enablePublicAccess(req, res)
         data = await this.putbucektPolicy(req, res)
         data = await this.enableWebSiteHosting(req, res)
         data = await this.createObject(req, res)
-        res.send(data)
+        res.send({
+            siteOnline: true
+        })
     } catch (error) {
         console.log('err')
     }

@@ -13,12 +13,13 @@ const {
 } = require("@aws-sdk/client-s3");
 
 
+
 const fs = require("fs")
 const path = require("path")
-const _Display = require('../display/bars');
+const _Display = require('../display/_Display');
+
 
 const chalk = require('chalk');
-
 
 
 exports.getBuckets = (req, res) => {
@@ -249,7 +250,7 @@ exports.hasWebSiteConfiguration = (req, res) => {
 }
 
 exports.enableWebSiteHosting = (req, res) => {
-
+    // set the new website configuration on the selected bucket
     return new Promise((resolve, reject) => {
         const staticHostParams = {
             Bucket: req.body.bucket,
@@ -270,8 +271,6 @@ exports.enableWebSiteHosting = (req, res) => {
 
         const run = async () => {
             // Insert specified bucket name and index and error documents into params JSON
-            // from command line arguments
-            // set the new website configuration on the selected bucket
             try {
                 _Display.line()
                 console.log(chalk.blueBright(`Request - Enabling site configuration for the ${req.body.bucket} bucket`))
@@ -427,10 +426,11 @@ exports.createObject = (req, res) => {
                 console.log(chalk.blueBright('Request - Upload files'))
                 _Display.line()
                 let data = await s3.send(new PutObjectCommand(params))
-                console.log(chalk.gray('Upload complete'),data)
+                console.log(chalk.gray('Upload complete'))
+                console.log('')
+                console.log('', data)
                 // res.send(data)
                 resolve(data)
-
 
             } catch (error) {
                 console.log('Erro', error)
@@ -456,9 +456,9 @@ exports.AmazonS3WebsiteEndpoints = (req, res) => {
 }
 
 
-exports.createSite = async(req, res) => {
+exports.createSite = async (req, res) => {
     try {
-        
+
         let data = await this.createBucket(req, res)
         data = await this.enablePublicAccess(req, res)
         data = await this.putbucektPolicy(req, res)

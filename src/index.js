@@ -8,7 +8,7 @@ const routes = require('./routes')
 const path = require('path')
 
 const chalk = require('chalk');
-const vDisplay = require('./display/bars')
+const _Display = require('./display/_Display')
 const figlet = require("figlet-promised");
 
 
@@ -21,7 +21,7 @@ app.listen(port, () => {
     const logo = await figlet("chappie");
     console.log(chalk.blueBright(logo));
     console.log('')
-    console.log(chalk.gray('            By: Michel Dias'))
+    console.log(chalk.gray('        Simple S3 host platform'))
    
     console.log('')
     console.log(chalk.greenBright(chalk.bold('Service is started')))

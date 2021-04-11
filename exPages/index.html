@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagina teste</title>
-    <link rel="stylesheet" href="style.css">
+    <script src="./main.js"></script>
+    <script>
+        function getHtml(template) {
+            return template.join("\n");
+        }
+        listAlbums();
+    </script>
 </head>
 <body>
-    <h1>Hello World!</h1>
-    <p>Você é o bichão mesmo</p>
+<h1>My photo albums app</h1>
+<div id="app"></div>
 </body>
 </html>

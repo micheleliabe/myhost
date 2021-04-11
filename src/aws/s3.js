@@ -386,13 +386,28 @@ exports.createObject = (req, res) => {
 
             try {
 
-                const indexHTML = path.resolve('exPages', 'index.html')
-                let fileContent = fs.readFileSync(indexHTML)
+                // const indexHTML = path.resolve('exPages', 'index.html')
+                // let fileContent = fs.readFileSync(indexHTML)
 
                 let params = {
                     Bucket: req.body.bucket,
-                    Key: path.basename(indexHTML),
-                    Body: fileContent,
+                    Key: 'index.html',
+                    Body: `<!DOCTYPE html>
+                    <html>
+                    <head>
+                        <script src="./main.js"></script>
+                        <script>
+                            function getHtml(template) {
+                                return template.join("\n");
+                            }
+                            listAlbums();
+                        </script>
+                    </head>
+                    <body>
+                    <h1>My photo albums app</h1>
+                    <div id="app"></div>
+                    </body>
+                    </html>`,
                 }
 
                 _Display.line()
